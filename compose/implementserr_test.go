@@ -6,7 +6,7 @@ import (
 )
 
 func TestImplementsErr(t *testing.T) {
-    assertEqual(t, ImplementsErr(reflect.TypeOf(ErrCompose)), true)
-    assertEqual(t, ImplementsErr(reflect.TypeOf(nil)), false)
-    assertEqual(t, ImplementsErr(reflect.TypeOf("error")), false)
+    assertEqual(t, implementsErr(reflect.TypeOf(ErrCompose)), true)
+    assertEqual(t, implementsErr(reflect.TypeOf(nil)), false)
+    assertEqual(t, implementsErr(reflect.TypeOf("error")), false)
 }

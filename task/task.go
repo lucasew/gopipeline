@@ -2,8 +2,10 @@ package task
 
 import "context"
 
+// Task A function that represents a task
 type Task func(context.Context) error
 
+// NewTask Transforms a function in a Task compatible function, if not a valid type spawn a error
 func NewTask(t interface{}) Task {
     switch fn := t.(type) {
     case func():

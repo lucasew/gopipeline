@@ -2,7 +2,7 @@ package compose
 
 import "reflect"
 
-func ImplementsErr(t reflect.Type) bool {
+func implementsErr(t reflect.Type) bool {
     if t == nil {
         return false
     }

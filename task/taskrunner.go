@@ -2,31 +2,34 @@ package task
 
 import "context"
 
-type TaskRunnerContextValue int
+type taskRunnerContextValue int
 
 const (
-    TaskRunnerInstance = 1 << iota
+    // TaskRunnerInstance Acess this TaskRunner instance inside a Task by its context
+    TaskRunnerInstance = taskRunnerContextValue(1 << iota)
 )
 
-type TaskRunner interface {
+// Pool Represents a generic task runner
+type Pool interface {
     SubmitTask(fn Task) chan error
     Tick(ctx context.Context)
 }
 
-func IngestTasksToTaskRunner(tasks chan Task, runner TaskRunner) {
+// IngestTasksToTaskRunner bridge tasks from a channel of tasks to a TaskRunner, runs detached until the channel is closed
+func IngestTasksToTaskRunner(tasks chan Task, pool Pool) {
     go func() {
         for task := range tasks {
-            runner.SubmitTask(task)
+            pool.SubmitTask(task)
         }
     }()
 }
 
-type contextTaskRunner struct {
+type contextPool struct {
     ctx context.Context
     tasks chan(func(ctx context.Context))
 }
 
-func (tr *contextTaskRunner) SubmitTask(fn Task) chan error {
+func (tr *contextPool) SubmitTask(fn Task) chan error {
     cb := make(chan error, 1)
     taskFn := func(ctx context.Context) {
         cb <- fn(context.WithValue(ctx, TaskRunnerInstance, tr))
@@ -36,7 +39,7 @@ func (tr *contextTaskRunner) SubmitTask(fn Task) chan error {
     return cb
 }
 
-func (tr *contextTaskRunner) Tick(ctx context.Context) {
+func (tr *contextPool) Tick(ctx context.Context) {
     done := make(chan struct{}, 1)
     mergedContext, cancel := context.WithCancel(ctx)
     go func () {
@@ -53,8 +56,9 @@ func (tr *contextTaskRunner) Tick(ctx context.Context) {
     close(done)
 }
 
-func NewContextTaskRunner(ctx context.Context) TaskRunner {
-    return &contextTaskRunner{
+// NewContextPool creates a pool that lives until the context is not cancelled
+func NewContextPool(ctx context.Context) Pool {
+    return &contextPool{
         ctx: ctx,
         tasks: make(chan func(context.Context), 64),
     }

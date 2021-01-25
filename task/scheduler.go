@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-// ExecuteJobs runs the tasks of a TaskRunner until the context is cancelled
-func ExecuteJobs(ctx context.Context, runner TaskRunner) {
+// ExecuteJobs runs the tasks of a Pool until the context is cancelled
+func ExecuteJobs(ctx context.Context, runner Pool) {
     for {
         select {
         case <-ctx.Done():
@@ -17,8 +17,8 @@ func ExecuteJobs(ctx context.Context, runner TaskRunner) {
     }
 }
 
-// ExecuteJobsTimeout runs the task of a TaskRunner until the context is cancelled, each task have a constant timeout
-func ExecuteJobsTimeout(ctx context.Context, runner TaskRunner, timeout time.Duration) {
+// ExecuteJobsTimeout runs the task of a Pool until the context is cancelled, each task have a constant timeout
+func ExecuteJobsTimeout(ctx context.Context, runner Pool, timeout time.Duration) {
     for {
         select {
         case <-ctx.Done():
@@ -32,7 +32,7 @@ func ExecuteJobsTimeout(ctx context.Context, runner TaskRunner, timeout time.Dur
 }
 
 // ScheduleJobs spawn ExecuteJobs loops using replicas goroutines until the context is cancelled
-func ScheduleJobs(ctx context.Context, runner TaskRunner, replicas int) {
+func ScheduleJobs(ctx context.Context, runner Pool, replicas int) {
     spawn := func (ctx context.Context) {
         begin:
         select {

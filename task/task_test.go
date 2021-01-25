@@ -8,7 +8,7 @@ import (
 func TestTaskIsRunning(t *testing.T) {
     ctx, cancel := context.WithCancel(context.Background())
     defer cancel()
-    tr := NewContextTaskRunner(ctx)
+    tr := NewContextPool(ctx)
     i := 0
     increment := func () {
         i++

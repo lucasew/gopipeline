@@ -2,11 +2,11 @@ package task
 
 import "context"
 
-type taskRunnerContextValue int
+type poolContextValue int
 
 const (
-    // TaskRunnerInstance Acess this TaskRunner instance inside a Task by its context
-    TaskRunnerInstance = taskRunnerContextValue(1 << iota)
+    // PoolInstance Acess this Pool instance inside a Task by its context
+    PoolInstance = poolContextValue(1 << iota)
 )
 
 // Pool Represents a generic task runner
@@ -15,8 +15,8 @@ type Pool interface {
     Tick(ctx context.Context)
 }
 
-// IngestTasksToTaskRunner bridge tasks from a channel of tasks to a TaskRunner, runs detached until the channel is closed
-func IngestTasksToTaskRunner(tasks chan Task, pool Pool) {
+// IngestTasksToPool bridge tasks from a channel of tasks to a Pool, runs detached until the channel is closed
+func IngestTasksToPool(tasks chan Task, pool Pool) {
     go func() {
         for task := range tasks {
             pool.SubmitTask(task)
@@ -32,7 +32,7 @@ type contextPool struct {
 func (tr *contextPool) SubmitTask(fn Task) chan error {
     cb := make(chan error, 1)
     taskFn := func(ctx context.Context) {
-        cb <- fn(context.WithValue(ctx, TaskRunnerInstance, tr))
+        cb <- fn(context.WithValue(ctx, PoolInstance, tr))
         defer close(cb)
     }
     tr.tasks <-taskFn
